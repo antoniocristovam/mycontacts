@@ -1,51 +1,11 @@
-const { v4 } = require("uuid");
-
 const db = require("../../database/index");
-
-let contacts = [
-  {
-    id: v4(),
-    name: "Antonio Cristovam",
-    email: "antoniocristovam@outlook.com.br",
-    phone: "992214177",
-    category_id: v4(),
-  },
-  {
-    id: v4(),
-    name: "Valderi Cristovam",
-    email: "deircristovam@outlook.com.br",
-    phone: "973027579",
-    category_id: v4(),
-  },
-  {
-    id: v4(),
-    name: "Armando Cristovam",
-    email: "deircristovam@outlook.com.br",
-    phone: "973027579",
-    category_id: v4(),
-  },
-  {
-    id: v4(),
-    name: "Julia arnaldo",
-    email: "deircristovam@outlook.com.br",
-    phone: "973027579",
-    category_id: v4(),
-  },
-  {
-    id: v4(),
-    name: "Paulo vieira",
-    email: "deircristovam@outlook.com.br",
-    phone: "973027579",
-    category_id: v4(),
-  },
-];
 
 class ContactRepository {
   async findAll(orderBy = "ASC") {
     const direction = orderBy.toUpperCase() === "DESC" ? "DESC" : "ASC";
 
     const rows = await db.query(
-      `SELECT * FROM contacts  ORDER BY name ${direction}`
+      `SELECT * FROM contacts ORDER BY name ${direction}`
     );
     return rows;
   }
@@ -62,11 +22,9 @@ class ContactRepository {
     return row;
   }
 
-  delete(id) {
-    return new Promise((resolve) => {
-      contacts = contacts.filter((contact) => contact.id !== id);
-      resolve();
-    });
+  async delete(id) {
+    const deleteOp = await db.query("DELETE FROM contacts WHERE id = $1", [id]);
+    return deleteOp;
   }
 
   async create({ name, email, phone, category_id }) {
@@ -79,22 +37,19 @@ class ContactRepository {
     return row;
   }
 
-  updater(id, { name, email, phone, category_id }) {
-    return new Promise((resolve) => {
-      const updateContact = {
-        id,
-        name,
-        email,
-        phone,
-        category_id,
-      };
+  async updater(id, { name, email, phone, category_id }) {
+    const [row] = await db.query(
+      `
+    UPDATE contacts
+    SET name = $1, email = $2, phone = $3, category_id = $4
+    WHERE id = $5
+    RETURNING *
 
-      contacts = contacts.map((contact) =>
-        contact.id === id ? updateContact : contact
-      );
+    `,
+      [name, email, phone, category_id, id]
+    );
 
-      resolve(updateContact);
-    });
+    return row;
   }
 }
 
