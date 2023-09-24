@@ -17,6 +17,21 @@ class CategoryController {
 
     response.json(category);
   }
+
+  async delete(request, response) {
+    const { id } = request.params;
+
+    const category = await CategoriesRepository.delete(id);
+
+    // if (!category) {
+    //   return response.status(404).json({ Error: "Contato não encontrado." });
+    // }
+
+    await CategoriesRepository.delete(id);
+
+    // response.json({ Success: "Contato deletado com sucesso." });
+    response.sendStatus(204);
+  }
 }
 
 module.exports = new CategoryController();
